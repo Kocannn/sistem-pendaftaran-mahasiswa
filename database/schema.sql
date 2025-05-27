@@ -1,6 +1,8 @@
 CREATE TABLE program_studi (
 	kode CHAR(8) PRIMARY KEY,
-	nama VARCHAR(255)
+	nama VARCHAR(255),
+    jenjang VARCHAR(255),
+    daya_tampung INT
 );
 
 CREATE TABLE mahasiswa (
