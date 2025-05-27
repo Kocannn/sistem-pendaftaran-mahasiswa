@@ -1,3 +1,5 @@
+-- db name = sistem_informasi_pendaftaran
+
 CREATE TABLE program_studi (
 	kode CHAR(8) PRIMARY KEY,
 	nama VARCHAR(255),
