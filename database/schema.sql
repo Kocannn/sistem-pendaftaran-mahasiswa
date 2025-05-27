@@ -4,7 +4,7 @@ CREATE TABLE program_studi (
 );
 
 CREATE TABLE mahasiswa (
-    nim CHAR(10) PRIMARY KEY,
+    nisn CHAR(10) PRIMARY KEY,
     tahun_lulus YEAR,
     nama VARCHAR(255),
     no_hp VARCHAR(20),
