@@ -1,5 +1,8 @@
 <?php
-include_once __DIR__ . '../../../service/admin/logout.php';
+include_once __DIR__ . '/../../service/db.php';
+include_once __DIR__ . '/../../service/admin/logout.php';
+include_once __DIR__ . '/../../service/admin/filter_and_pagination.php';
+include_once __DIR__ . '/../../service/calculate.php';
 session_start();
 
 if (!isset($_SESSION["admin_id"])) {
@@ -11,6 +14,42 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
   header("Location: /admin/");
   exit();
 }
+// Handle admission calculation if requested
+if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 'true') {
+  // Get all students that need calculation
+  $studentsQuery = $conn->query("
+    SELECT 
+      nisn, jalur_pendaftaran, skor_ujian, prodi_1_kode, prodi_2_kode 
+    FROM 
+      mahasiswa
+    LIMIT 50 -- Limiting to avoid too many calculations at once
+  ");
+
+  $processedCount = 0;
+  $successCount = 0;
+
+  while ($student = $studentsQuery->fetch_assoc()) {
+    $processedCount++;
+    $admissionResult = calculateAdmission(
+      $student['jalur_pendaftaran'],
+      $student['skor_ujian'],
+      $student['prodi_1_kode'],
+      $student['prodi_2_kode']
+    );
+
+    if (applyAdmissionResult($conn, $student['nisn'], $admissionResult)) {
+      $successCount++;
+    }
+  }
+
+  // Store result message in session to display after redirect
+  $_SESSION['calculation_message'] = "Perhitungan selesai: $successCount dari $processedCount mahasiswa berhasil diproses.";
+
+  // Redirect to avoid form resubmission
+  header("Location: " . $_SERVER['PHP_SELF']);
+  exit();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -63,13 +102,6 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
               </svg>
               Dashboard
             </a>
-            <a href="#" class="text-gray-700 hover:bg-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-              <svg class="text-gray-400 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              </svg>
-              Pengaturan
-            </a>
           </nav>
 
           <!-- User Profile with Logout -->
@@ -116,6 +148,15 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
           <div class="flex-1 flex">
             <h1 class="text-2xl font-semibold text-gray-900">Dashboard Penerimaan Mahasiswa</h1>
           </div>
+
+          <!-- Notification Area -->
+          <?php if (isset($_SESSION['calculation_message'])): ?>
+            <div class="mr-4 px-4 py-2 bg-green-100 border border-green-200 text-green-700 rounded-md">
+              <?= $_SESSION['calculation_message'] ?>
+              <?php unset($_SESSION['calculation_message']); ?>
+            </div>
+          <?php endif; ?>
+
           <div class="ml-4 flex items-center md:ml-6 space-x-3">
 
             <!-- Mobile Logout Button -->
@@ -151,7 +192,7 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
                     <div class="ml-5 w-0 flex-1">
                       <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Total Pendaftar</dt>
-                        <dd class="text-lg font-medium text-gray-900">1,247</dd>
+                        <dd class="text-lg font-medium text-gray-900"><?= $totalStudents ?></dd>
                       </dl>
                     </div>
                   </div>
@@ -172,7 +213,7 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
                     <div class="ml-5 w-0 flex-1">
                       <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Jalur SNBP</dt>
-                        <dd class="text-lg font-medium text-gray-900">456</dd>
+                        <dd class="text-lg font-medium text-gray-900"><?= $snbpCount ?></dd>
                       </dl>
                     </div>
                   </div>
@@ -193,7 +234,7 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
                     <div class="ml-5 w-0 flex-1">
                       <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Jalur SNBT</dt>
-                        <dd class="text-lg font-medium text-gray-900">523</dd>
+                        <dd class="text-lg font-medium text-gray-900"><?= $snbtCount ?></dd>
                       </dl>
                     </div>
                   </div>
@@ -214,7 +255,7 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
                     <div class="ml-5 w-0 flex-1">
                       <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Jalur Mandiri</dt>
-                        <dd class="text-lg font-medium text-gray-900">268</dd>
+                        <dd class="text-lg font-medium text-gray-900"><?= $mandiriCount ?></dd>
                       </dl>
                     </div>
                   </div>
@@ -247,144 +288,115 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <h3 class="text-lg font-medium text-gray-900">Daftar Mahasiswa</h3>
                   <div class="mt-3 sm:mt-0 sm:ml-4 flex space-x-3">
-                    <!-- Filter Jalur -->
-                    <select class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                      <option>Semua Jalur</option>
-                      <option>SNBP</option>
-                      <option>SNBT</option>
-                      <option>Mandiri</option>
-                    </select>
+                    <form method="GET" action="" class="flex space-x-3">
+                      <select name="jalur" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" onchange="this.form.submit()">
+                        <option <?= !isset($_GET['jalur']) || $_GET['jalur'] === 'Semua Jalur' ? 'selected' : '' ?>>Semua Jalur</option>
+                        <option <?= isset($_GET['jalur']) && $_GET['jalur'] === 'SNBP' ? 'selected' : '' ?>>SNBP</option>
+                        <option <?= isset($_GET['jalur']) && $_GET['jalur'] === 'SNBT' ? 'selected' : '' ?>>SNBT</option>
+                        <option <?= isset($_GET['jalur']) && $_GET['jalur'] === 'Mandiri' ? 'selected' : '' ?>>Mandiri</option>
+                      </select>
 
-                    <!-- Filter Status -->
-                    <select class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                      <option>Semua Status</option>
-                      <option>Lolos P1</option>
-                      <option>Lolos P2</option>
-                      <option>Dialihkan</option>
-                      <option>Tidak Lulus</option>
-                    </select>
+                      <!-- Filter Status -->
+                      <select name="status" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" onchange="this.form.submit()">
+                        <option <?= !isset($_GET['status']) || $_GET['status'] === 'Semua Status' ? 'selected' : '' ?>>Semua Status</option>
+                        <option <?= isset($_GET['status']) && $_GET['status'] === 'Lolos P1' ? 'selected' : '' ?>>Lolos P1</option>
+                        <option <?= isset($_GET['status']) && $_GET['status'] === 'Lolos P2' ? 'selected' : '' ?>>Lolos P2</option>
+                        <option <?= isset($_GET['status']) && $_GET['status'] === 'Dialihkan' ? 'selected' : '' ?>>Dialihkan</option>
+                        <option <?= isset($_GET['status']) && $_GET['status'] === 'Tidak Lulus' ? 'selected' : '' ?>>Tidak Lulus</option>
+                      </select>
 
-                    <!-- Export Button -->
-                    <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                      </svg>
-                      Export
-                    </button>
-                  </div>
-                </div>
-              </div>
+                    </form>
 
-              <!-- Table -->
-              <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pendaftaran</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program Studi</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody class="bg-white divide-y divide-gray-200">
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2024001</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Ahmad Rizki</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Teknik Informatika</td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">SNBP</span>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Lolos P1</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2024002</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Siti Nurhaliza</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Manajemen</td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">SNBT</span>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Lolos P2</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2024003</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Budi Santoso</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Akuntansi</td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Mandiri</span>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">Dialihkan</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2024004</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Maya Sari</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Psikologi</td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">SNBP</span>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Tidak Lulus</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2024005</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Andi Pratama</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Teknik Sipil</td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">SNBT</span>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Lolos P1</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- Pagination -->
-              <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <div class="flex-1 flex justify-between sm:hidden">
-                  <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Previous</a>
-                  <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</a>
-                </div>
-                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p class="text-sm text-gray-700">
-                      Menampilkan <span class="font-medium">1</span> sampai <span class="font-medium">5</span> dari <span class="font-medium">97</span> hasil
-                    </p>
-                  </div>
-                  <div>
-                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                      <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                        <span class="sr-only">Previous</span>
-                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    <!-- Calculate Admissions -->
+                    <form method="POST" action="" class="flex">
+                      <button type="submit" name="calculate_admission" value="true" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                         </svg>
-                      </a>
-                      <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">1</a>
-                      <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">2</a>
-                      <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">3</a>
-                      <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                        <span class="sr-only">Next</span>
-                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                        </svg>
-                      </a>
-                    </nav>
+                        Hitung Kelulusan
+                      </button>
+                    </form>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pendaftaran</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program Studi</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <?php while ($student = $students->fetch_assoc()): ?>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= htmlspecialchars($student['nisn']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= htmlspecialchars($student['nama']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= htmlspecialchars($student['prodi_nama']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                        <?= $student['jalur_pendaftaran'] === 'SNBP' ? 'bg-green-100 text-green-800' : ($student['jalur_pendaftaran'] === 'SNBT' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-purple-100 text-purple-800') ?>">
+                        <?= htmlspecialchars($student['jalur_pendaftaran']) ?>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                        <?= $student['status'] === 'Lolos P1' ? 'bg-green-100 text-green-800' : ($student['status'] === 'Lolos P2' ? 'bg-blue-100 text-blue-800' : ($student['status'] === 'Dialihkan' ? 'bg-orange-100 text-orange-800' :
+                          'bg-red-100 text-red-800')) ?>">
+                        <?= htmlspecialchars($student['status']) ?>
+                      </span>
+                  </tr>
+                <?php endwhile; ?>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Previous</a>
+              <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</a>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700">
+                  Menampilkan <span class="font-medium"><?= $offset + 1 ?></span> sampai <span class="font-medium"><?= min($offset + $limit, $totalRecords) ?></span> dari <span class="font-medium"><?= $totalRecords ?></span> hasil
+                </p>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                  <a href="?page=<?= max(1, $page - 1) ?><?= isset($_GET['jalur']) ? '&jalur=' . $_GET['jalur'] : '' ?><?= isset($_GET['status']) ? '&status=' . $_GET['status'] : '' ?>"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Previous</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </a>
+
+
+                  <a href="?page=<?= min($totalPages, $page + 1) ?><?= isset($_GET['jalur']) ? '&jalur=' . $_GET['jalur'] : '' ?><?= isset($_GET['status']) ? '&status=' . $_GET['status'] : '' ?>"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Next</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </a>
+                </nav>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
     </div>
+    </main>
+  </div>
   </div>
 
   <!-- Logout Confirmation Modal -->
@@ -424,10 +436,10 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
     const barChart = new Chart(barCtx, {
       type: 'bar',
       data: {
-        labels: ['Teknik Informatika', 'Manajemen', 'Akuntansi', 'Psikologi', 'Teknik Sipil', 'Hukum'],
+        labels: <?= json_encode($prodiLabels) ?>,
         datasets: [{
           label: 'Jumlah Peminat',
-          data: [245, 189, 156, 134, 123, 98],
+          data: <?= json_encode($prodiData) ?>,
           backgroundColor: [
             'rgba(59, 130, 246, 0.8)',
             'rgba(16, 185, 129, 0.8)',
@@ -468,9 +480,9 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
     const pieChart = new Chart(pieCtx, {
       type: 'pie',
       data: {
-        labels: ['Lolos P1', 'Lolos P2', 'Dialihkan', 'Tidak Lulus'],
+        labels: <?= json_encode($statusLabels) ?>,
         datasets: [{
-          data: [425, 312, 186, 324],
+          data: <?= json_encode($statusData) ?>,
           backgroundColor: [
             'rgba(16, 185, 129, 0.8)',
             'rgba(59, 130, 246, 0.8)',
