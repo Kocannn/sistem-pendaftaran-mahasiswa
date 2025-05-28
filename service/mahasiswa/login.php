@@ -20,18 +20,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 'nisn' => $db_nisn,
                 'nama' => $db_nama
             ];
-            header("Location: /mahasiswa");
+            header("Location: /sistem-informasi-pendaftaran/mahasiswa");
             exit();
         } else {
             echo "<script>
                     alert('NISN atau Password salah');
-                    window.location.href = '/mahasiswa/login';
+                    window.location.href = '/sistem-informasi-pendaftaran/mahasiswa/login';
                 </script>";
         }
     } else {
         echo "<script>
                 alert('NISN atau Password salah');
-                window.location.href = '/mahasiswa/login';
+                window.location.href = '/sistem-informasi-pendaftaran/mahasiswa/login';
             </script>";
     }
 

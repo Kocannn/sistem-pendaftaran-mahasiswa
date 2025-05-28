@@ -38,10 +38,10 @@
           <!-- Login/Daftar -->
           <div class="hidden md:flex items-center space-x-3">
             <a
-              href="mahasiswa/login"
+              href="/sistem-informasi-pendaftaran/mahasiswa/login"
               class="px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-600 hover:text-white transition">Login</a>
             <a
-              href="register.html"
+              href="/sistem-informasi-pendaftaran/mahasiswa/register"
               class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Daftar</a>
           </div>
 
@@ -83,10 +83,10 @@
         <a href="#jalur" class="block text-gray-700 hover:text-blue-500">Cara Pendaftaran</a>
         <a href="#faq" class="block text-gray-700 hover:text-blue-500">FaQ</a>
         <a
-          href="login.html"
+          href="/sistem-informasi-pendaftaran/mahasiswa/login"
           class="block mt-2 text-blue-600 border border-blue-600 text-center py-2 rounded hover:bg-blue-600 hover:text-white transition">Login</a>
         <a
-          href="register.html"
+          href="/sistem-informasi-pendaftaran/mahasiswa/register"
           class="block bg-blue-600 text-white text-center py-2 rounded hover:bg-blue-700 transition">Daftar</a>
       </div>
     </nav>

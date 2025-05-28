@@ -23,7 +23,7 @@ $conn->close();
     <div class="bg-white p-8 rounded shadow-md w-full max-w-md my-8">
         <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Pendaftaran Mahasiswa</h2>
         <?php if (isset($errors['global'])): ?>
-            <p style="color:red"><?= $errors['global'] ?></p>
+            <p class="text-red-500 text-center mb-2"><?= $errors['global'] ?></p>
         <?php endif; ?>
         <form class="space-y-4" method="POST" enctype="multipart/form-data">
             <div>
@@ -103,7 +103,7 @@ $conn->close();
         </form>
 
         <p class="text-sm text-center mt-4">
-            Sudah punya akun? <a href="/mahasiswa/login" class="text-blue-500 hover:underline">Login di sini</a>
+            Sudah punya akun? <a href="/sistem-informasi-pendaftaran/mahasiswa/login" class="text-blue-500 hover:underline">Login di sini</a>
         </p>
     </div>
 </body>

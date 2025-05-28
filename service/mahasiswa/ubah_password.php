@@ -12,7 +12,7 @@ $confirm_password = $_POST['confirm_password'] ?? '';
 if ($new_password !== $confirm_password) {
     echo "<script>
             alert('Password baru dan konfirmasi password tidak cocok.');
-            window.location.href = '/mahasiswa?page=password';
+            window.location.href = '/sistem-informasi-pendaftaran/mahasiswa?page=password';
         </script>";
 } else {
     $stmt = $conn->prepare("SELECT password FROM mahasiswa WHERE nisn = ?");
@@ -35,26 +35,26 @@ if ($new_password !== $confirm_password) {
             if ($update->execute()) {
                 echo "<script>
                     alert('Password berhasil diubah.');
-                    window.location.href = '/mahasiswa?page=password';
+                    window.location.href = '/sistem-informasi-pendaftaran/mahasiswa?page=password';
                 </script>";
                 exit();
             } else {
                 echo "<script>
                         alert('Gagal mengubah password. Coba lagi.');
-                        window.location.href = '/mahasiswa?page=password';
+                        window.location.href = '/sistem-informasi-pendaftaran/mahasiswa?page=password';
                     </script>";
             }
             $update->close();
         } else {
             echo "<script>
                     alert('Password lama salah.');
-                    window.location.href = '/mahasiswa?page=password';
+                    window.location.href = '/sistem-informasi-pendaftaran/mahasiswa?page=password';
                 </script>";
         }
     } else {
         echo "<script>
                 alert('Mahasiswa tidak ditemukan.');
-                window.location.href = '/mahasiswa?page=password';
+                window.location.href = '/sistem-informasi-pendaftaran/mahasiswa?page=password';
             </script>";
     }
     $stmt->close();

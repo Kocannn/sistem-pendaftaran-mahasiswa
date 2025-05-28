@@ -39,7 +39,7 @@ $conn->close();
                 <div class="flex gap-4">
                     <div class="flex flex-1 flex-col gap-4 bg-white p-6 rounded shadow max-w-lg">
                         <div class="border-2 w-36 h-36 rounded-full self-center">
-                            <img src="<?= $profil['foto_profil'] ?? "/assets/img/profile.webp" ?>" alt="foto profile" class="rounded-full w-full h-full object-cover">
+                            <img src="<?= $profil['foto_profil'] ?? "/sistem-informasi-pendaftaran/assets/img/profile.webp" ?>" alt="foto profile" class="rounded-full w-full h-full object-cover">
                         </div>
                         <hr>
                         <div>
@@ -96,7 +96,7 @@ $conn->close();
                     <div class="flex flex-col gap-4 bg-white p-6 rounded shadow max-w-lg">
                         <div class="border-2 w-36 h-36 rounded-full self-center">
                             <label for="foto_profil" class="cursor-pointer">
-                                <img id="preview" src="<?= $profil['foto_profil'] ?? '/assets/img/profile.webp' ?>" alt="foto profile" class="rounded-full w-full h-full object-cover">
+                                <img id="preview" src="<?= $profil['foto_profil'] ?? '/sistem-informasi-pendaftaran/assets/img/profile.webp' ?>" alt="foto profile" class="rounded-full w-full h-full object-cover">
                             </label>
                             <input type="file" id="foto_profil" name="foto_profil" hidden>
                         </div>
