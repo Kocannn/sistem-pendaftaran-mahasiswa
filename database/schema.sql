@@ -20,6 +20,7 @@ CREATE TABLE mahasiswa (
     password VARCHAR(255),
     bukti_pembayaran TEXT,
     status_kelulusan ENUM('lulus', 'tidak lulus'),
+    foto_profil TEXT,
     FOREIGN KEY (prodi_1_kode) REFERENCES program_studi(kode) ON UPDATE CASCADE ON DELETE RESTRICT,
     FOREIGN KEY (prodi_2_kode) REFERENCES program_studi(kode) ON UPDATE CASCADE ON DELETE RESTRICT
 );
