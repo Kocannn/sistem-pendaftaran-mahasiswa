@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (empty($input['nama'])) $errors['nama'] = 'Nama wajib diisi';
     if (!preg_match('/^\d{10}$/', $input['nisn'])) $errors['nisn'] = 'NISN harus 10 digit angka';
     if (!preg_match('/^\d{4}$/', $input['tahun_lulus'])) $errors['tahun_lulus'] = 'Tahun lulus tidak valid';
-    if (strlen($input['password']) < 8) $errors['password'] = 'Password minimal 6 karakter';
+    if (strlen($input['password']) < 8) $errors['password'] = 'Password minimal 8 karakter';
     if ($input['password'] !== $input['konfirmasi_password']) $errors['konfirmasi_password'] = 'Konfirmasi password tidak sama';
     if (!preg_match('/^08\d{8,11}$/', $input['no_hp'])) $errors['no_hp'] = 'No HP tidak valid';
     if (!DateTime::createFromFormat('Y-m-d', $input['tanggal_lahir'])) $errors['tanggal_lahir'] = 'Tanggal lahir tidak valid';
@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     echo "
                         <script>
                             alert('Pendaftaran Berhasil');
-                            window.location.href = 'mahasiswa/login';
+                            window.location.href = '/sistem-informasi-pendaftaran/mahasiswa/login';
                         </script>
                     ";
                 } else {
@@ -71,9 +71,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } catch (Exception $e) {
                 if ($e->getCode() === 1062) {
                     $errors['nisn'] = "NISN sudah terdaftar";
-                    exit();
                 }
-                $errors['global'] = "Registrasi gagal: " . $stmt->error;
+                $errors['global'] = "Registrasi gagal";
             }
             $stmt->close();
         }

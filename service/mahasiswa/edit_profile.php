@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['edit_profil'])) {
         if (isset($_FILES['foto_profil']) && $_FILES['foto_profil']['error'] === UPLOAD_ERR_OK) {
             $foto_profil = $_FILES['foto_profil'];
             $save_path = __DIR__ . "/../../uploads/" . basename($foto_profil['name']);
-            $foto_profil_path = "/uploads/" . basename($foto_profil['name']);
+            $foto_profil_path = "/sistem-informasi-pendaftaran/uploads/" . basename($foto_profil['name']);
 
             if (!move_uploaded_file($foto_profil["tmp_name"], $save_path)) {
                 $errors['foto_profil'] = "Gagal upload foto profil.";

@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (isset($_SESSION['auth'])) {
-    header("Location: /mahasiswa");
+    header("Location: /sistem-informasi-pendaftaran/mahasiswa");
     exit();
 }
 
@@ -32,7 +32,7 @@ if (isset($_SESSION['auth'])) {
             <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
         </form>
 
-        <p class="text-sm text-center mt-4">Belum punya akun? <a href="../register" class="text-blue-500 hover:underline">Daftar di sini</a></p>
+        <p class="text-sm text-center mt-4">Belum punya akun? <a href="/sistem-informasi-pendaftaran/mahasiswa/register" class="text-blue-500 hover:underline">Daftar di sini</a></p>
     </div>
 </body>
 
