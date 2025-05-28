@@ -23,6 +23,62 @@ while ($row = $prodiQuery->fetch_assoc()) {
   $prodiData[] = $row['jumlah'];
 }
 
+// Fetch test score distribution data for chart
+$scoreQuery = $conn->query("
+    SELECT 
+        CASE 
+            WHEN skor_ujian < 45 THEN 'Below 45'
+            WHEN skor_ujian BETWEEN 45 AND 49.9 THEN '45-49.9'
+            WHEN skor_ujian BETWEEN 50 AND 54.9 THEN '50-54.9'
+            WHEN skor_ujian BETWEEN 55 AND 59.9 THEN '55-59.9'
+            WHEN skor_ujian BETWEEN 60 AND 64.9 THEN '60-64.9'
+            WHEN skor_ujian BETWEEN 65 AND 69.9 THEN '65-69.9'
+            WHEN skor_ujian BETWEEN 70 AND 74.9 THEN '70-74.9'
+            WHEN skor_ujian BETWEEN 75 AND 79.9 THEN '75-79.9'
+            WHEN skor_ujian BETWEEN 80 AND 84.9 THEN '80-84.9'
+            WHEN skor_ujian BETWEEN 85 AND 89.9 THEN '85-89.9'
+            WHEN skor_ujian >= 90 THEN '90+'
+        END as score_range,
+        COUNT(*) as count
+    FROM mahasiswa
+    GROUP BY score_range
+    ORDER BY MIN(skor_ujian)
+");
+
+$scoreLabels = [];
+$scoreData = [];
+while ($row = $scoreQuery->fetch_assoc()) {
+  $scoreLabels[] = $row['score_range'];
+  $scoreData[] = $row['count'];
+}
+
+// Fetch admission status by path data for chart
+$pathStatusQuery = $conn->query("
+    SELECT 
+        jalur_pendaftaran,
+        CASE
+            WHEN prodi_1_kode = prodi_2_kode THEN 'Lolos P1'
+            WHEN status_kelulusan = 'lulus' AND prodi_1_kode != prodi_2_kode THEN 'Lolos P2'
+            WHEN status_kelulusan = 'tidak lulus' THEN 'Tidak Lulus'
+            ELSE 'Dialihkan'
+        END as status,
+        COUNT(*) as count
+    FROM mahasiswa
+    GROUP BY jalur_pendaftaran, status
+    ORDER BY jalur_pendaftaran, status
+");
+
+$pathStatusData = [];
+$allStatuses = ['Lolos P1', 'Lolos P2', 'Dialihkan', 'Tidak Lulus'];
+$allPaths = ['SNBP', 'SNBT', 'Mandiri'];
+
+foreach ($allPaths as $path) {
+  $pathStatusData[$path] = array_fill_keys($allStatuses, 0);
+}
+
+while ($row = $pathStatusQuery->fetch_assoc()) {
+  $pathStatusData[$row['jalur_pendaftaran']][$row['status']] = $row['count'];
+}
 // Fetch status data for pie chart
 $statusQuery = $conn->query("
     SELECT 

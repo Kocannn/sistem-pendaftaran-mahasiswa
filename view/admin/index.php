@@ -265,7 +265,7 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
 
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              <!-- Bar Chart -->
+              <!-- Bar Chart - Program Study Interest -->
               <div class="bg-white shadow rounded-lg p-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Peminat per Program Studi</h3>
                 <div style="height: 300px;">
@@ -273,11 +273,30 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
                 </div>
               </div>
 
-              <!-- Pie Chart -->
+              <!-- Pie Chart - Admission Status -->
               <div class="bg-white shadow rounded-lg p-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Status Kelulusan</h3>
                 <div style="height: 300px;">
                   <canvas id="pieChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Statistics Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <!-- Line Chart - Score Distribution -->
+              <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Distribusi Nilai Ujian</h3>
+                <div style="height: 300px;">
+                  <canvas id="scoreChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Stacked Bar Chart - Status by Path -->
+              <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Status Kelulusan per Jalur</h3>
+                <div style="height: 300px;">
+                  <canvas id="pathStatusChart"></canvas>
                 </div>
               </div>
             </div>
@@ -394,9 +413,8 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
             </div>
           </div>
         </div>
+      </main>
     </div>
-    </main>
-  </div>
   </div>
 
   <!-- Logout Confirmation Modal -->
@@ -475,6 +493,136 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
       }
     });
 
+    // Score Distribution Chart
+    const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+    const scoreChart = new Chart(scoreCtx, {
+      type: 'line',
+      data: {
+        labels: <?= json_encode($scoreLabels) ?>,
+        datasets: [{
+          label: 'Jumlah Mahasiswa',
+          data: <?= json_encode($scoreData) ?>,
+          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 2,
+          pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1,
+          pointRadius: 4,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            callbacks: {
+              title: function(context) {
+                return 'Range Nilai: ' + context[0].label;
+              },
+              label: function(context) {
+                return 'Jumlah: ' + context.raw + ' mahasiswa';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Status by Path Chart
+    const pathStatusCtx = document.getElementById('pathStatusChart').getContext('2d');
+    const pathStatusChart = new Chart(pathStatusCtx, {
+      type: 'bar',
+      data: {
+        labels: ['SNBP', 'SNBT', 'Mandiri'],
+        datasets: [{
+            label: 'Lolos P1',
+            data: [
+              <?= $pathStatusData['SNBP']['Lolos P1'] ?>,
+              <?= $pathStatusData['SNBT']['Lolos P1'] ?>,
+              <?= $pathStatusData['Mandiri']['Lolos P1'] ?>
+            ],
+            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Lolos P2',
+            data: [
+              <?= $pathStatusData['SNBP']['Lolos P2'] ?>,
+              <?= $pathStatusData['SNBT']['Lolos P2'] ?>,
+              <?= $pathStatusData['Mandiri']['Lolos P2'] ?>
+            ],
+            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Dialihkan',
+            data: [
+              <?= $pathStatusData['SNBP']['Dialihkan'] ?>,
+              <?= $pathStatusData['SNBT']['Dialihkan'] ?>,
+              <?= $pathStatusData['Mandiri']['Dialihkan'] ?>
+            ],
+            backgroundColor: 'rgba(245, 158, 11, 0.8)',
+            borderColor: 'rgba(245, 158, 11, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Tidak Lulus',
+            data: [
+              <?= $pathStatusData['SNBP']['Tidak Lulus'] ?>,
+              <?= $pathStatusData['SNBT']['Tidak Lulus'] ?>,
+              <?= $pathStatusData['Mandiri']['Tidak Lulus'] ?>
+            ],
+            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+            borderColor: 'rgba(239, 68, 68, 1)',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            stacked: true,
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + context.raw + ' mahasiswa';
+              }
+            }
+          }
+        }
+      }
+    });
     // Pie Chart - Status Kelulusan
     const pieCtx = document.getElementById('pieChart').getContext('2d');
     const pieChart = new Chart(pieCtx, {
