@@ -2,8 +2,8 @@
 
 $host = "127.0.0.1";
 $user = "root";
-$pass = "TANPAnama12@";
-$db = "sistem_informasi_pendaftaran";
+$pass = "";
+$db = "sistem-informasi-pendaftaran";
 
 if (!isset($conn)) {
     $conn = new mysqli($host, $user, $pass, $db);

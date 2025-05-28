@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-<html lang="id">
+  <!DOCTYPE html>
+  <html lang="id">
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,9 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script
       defer
-      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   </head>
+
   <body class="bg-gray-50">
     <!-- Navbar -->
     <nav class="bg-white shadow-md" x-data="{ open: false }">
@@ -24,36 +25,24 @@
           <div class="hidden md:flex space-x-6 items-center">
             <a
               href="#beranda"
-              class="text-gray-700 font-bold hover:text-blue-500"
-              >Beranda</a
-            >
+              class="text-gray-700 font-bold hover:text-blue-500">Beranda</a>
             <a
               href="#jadwal"
-              class="text-gray-700 font-bold hover:text-blue-500"
-              >Jadwal Pendaftaran</a
-            >
+              class="text-gray-700 font-bold hover:text-blue-500">Jadwal Pendaftaran</a>
             <a
               href="#cara pendaftaran"
-              class="text-gray-700 font-bold hover:text-blue-500"
-              >Cara Pendaftaran</a
-            >
-            <a href="#faq" class="text-gray-700 font-bold hover:text-blue-500"
-              >FaQ</a
-            >
+              class="text-gray-700 font-bold hover:text-blue-500">Cara Pendaftaran</a>
+            <a href="#faq" class="text-gray-700 font-bold hover:text-blue-500">FaQ</a>
           </div>
 
           <!-- Login/Daftar -->
           <div class="hidden md:flex items-center space-x-3">
             <a
-              href="login.html"
-              class="px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-600 hover:text-white transition"
-              >Login</a
-            >
+              href="mahasiswa/login"
+              class="px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-600 hover:text-white transition">Login</a>
             <a
               href="register.html"
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-              >Daftar</a
-            >
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Daftar</a>
           </div>
 
           <!-- Hamburger menu (mobile) -->
@@ -61,30 +50,26 @@
             <button
               @click="open = !open"
               type="button"
-              class="text-gray-700 hover:text-blue-600 focus:outline-none"
-            >
+              class="text-gray-700 hover:text-blue-600 focus:outline-none">
               <svg
                 class="w-6 h-6"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   :class="{'hidden': open, 'inline-flex': !open }"
                   class="inline-flex"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+                  d="M4 6h16M4 12h16M4 18h16" />
                 <path
                   :class="{'hidden': !open, 'inline-flex': open }"
                   class="hidden"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                  d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -93,34 +78,23 @@
 
       <!-- Mobile Menu -->
       <div x-show="open" class="md:hidden px-4 pb-4 space-y-2">
-        <a href="#beranda" class="block text-gray-700 hover:text-blue-500"
-          >Beranda</a
-        >
-        <a href="#jadwal" class="block text-gray-700 hover:text-blue-500"
-          >Jadwal Pendaftaran</a
-        >
-        <a href="#jalur" class="block text-gray-700 hover:text-blue-500"
-          >Cara Pendaftaran</a
-        >
+        <a href="#beranda" class="block text-gray-700 hover:text-blue-500">Beranda</a>
+        <a href="#jadwal" class="block text-gray-700 hover:text-blue-500">Jadwal Pendaftaran</a>
+        <a href="#jalur" class="block text-gray-700 hover:text-blue-500">Cara Pendaftaran</a>
         <a href="#faq" class="block text-gray-700 hover:text-blue-500">FaQ</a>
         <a
           href="login.html"
-          class="block mt-2 text-blue-600 border border-blue-600 text-center py-2 rounded hover:bg-blue-600 hover:text-white transition"
-          >Login</a
-        >
+          class="block mt-2 text-blue-600 border border-blue-600 text-center py-2 rounded hover:bg-blue-600 hover:text-white transition">Login</a>
         <a
           href="register.html"
-          class="block bg-blue-600 text-white text-center py-2 rounded hover:bg-blue-700 transition"
-          >Daftar</a
-        >
+          class="block bg-blue-600 text-white text-center py-2 rounded hover:bg-blue-700 transition">Daftar</a>
       </div>
     </nav>
 
     <!-- Hero Section -->
     <section class="bg-blue-100 py-20">
       <div
-        class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between"
-      >
+        class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
         <!-- Teks Hero -->
         <div class="md:w-1/2 mb-10 md:mb-0">
           <h1 class="text-4xl font-extrabold text-blue-800 leading-tight mb-4">
@@ -133,8 +107,7 @@
           </p>
           <a
             href="register.html"
-            class="inline-block bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700 transition"
-          >
+            class="inline-block bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700 transition">
             Daftar Sekarang
           </a>
         </div>
@@ -144,8 +117,7 @@
           <img
             src="https://plus.unsplash.com/premium_photo-1713296256430-3c828fca19ae?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NzF8fHVuaXZlcnNpdHl8ZW58MHx8MHx8fDA%3D"
             alt="Ilustrasi Mahasiswa"
-            class="rounded-lg shadow-lg transform transition duration-300 hover:scale-105"
-          />
+            class="rounded-lg shadow-lg transform transition duration-300 hover:scale-105" />
         </div>
       </div>
     </section>
@@ -154,8 +126,7 @@
     <section
       class="bg-gray-100 py-16 px-6"
       x-data="{ tab: 'snbp' }"
-      id="cara pendaftaran"
-    >
+      id="cara pendaftaran">
       <div class="max-w-6xl mx-auto">
         <h2 class="text-3xl font-bold text-center text-blue-800 mb-8">
           Cara Pendaftaran
@@ -166,22 +137,19 @@
           <button
             @click="tab = 'snbp'"
             :class="tab === 'snbp' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'"
-            class="px-4 py-2 rounded shadow"
-          >
+            class="px-4 py-2 rounded shadow">
             SNBP
           </button>
           <button
             @click="tab = 'snbt'"
             :class="tab === 'snbt' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'"
-            class="px-4 py-2 rounded shadow"
-          >
+            class="px-4 py-2 rounded shadow">
             SNBT
           </button>
           <button
             @click="tab = 'mandiri'"
             :class="tab === 'mandiri' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'"
-            class="px-4 py-2 rounded shadow"
-          >
+            class="px-4 py-2 rounded shadow">
             Mandiri
           </button>
         </div>
@@ -375,27 +343,21 @@
           <!-- FAQ 1 -->
           <div
             class="border border-gray-200 rounded-lg"
-            @click="selected !== 1 ? selected = 1 : selected = null"
-          >
+            @click="selected !== 1 ? selected = 1 : selected = null">
             <button
-              class="w-full px-6 py-4 flex justify-between items-center text-left"
-            >
-              <span class="text-lg font-medium text-gray-800"
-                >Apa itu jalur SNBT?</span
-              >
+              class="w-full px-6 py-4 flex justify-between items-center text-left">
+              <span class="text-lg font-medium text-gray-800">Apa itu jalur SNBT?</span>
               <svg
                 x-show="selected !== 1"
                 class="w-6 h-6 text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d="M12 4v16m8-8H4"
-                />
+                  d="M12 4v16m8-8H4" />
               </svg>
               <svg
                 x-show="selected === 1"
@@ -403,13 +365,11 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d="M20 12H4"
-                />
+                  d="M20 12H4" />
               </svg>
             </button>
             <div x-show="selected === 1" class="px-6 pb-4 text-gray-600">
@@ -422,27 +382,21 @@
           <!-- FAQ 2 -->
           <div
             class="border border-gray-200 rounded-lg"
-            @click="selected !== 2 ? selected = 2 : selected = null"
-          >
+            @click="selected !== 2 ? selected = 2 : selected = null">
             <button
-              class="w-full px-6 py-4 flex justify-between items-center text-left"
-            >
-              <span class="text-lg font-medium text-gray-800"
-                >Bagaimana jika saya lupa password akun?</span
-              >
+              class="w-full px-6 py-4 flex justify-between items-center text-left">
+              <span class="text-lg font-medium text-gray-800">Bagaimana jika saya lupa password akun?</span>
               <svg
                 x-show="selected !== 2"
                 class="w-6 h-6 text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d="M12 4v16m8-8H4"
-                />
+                  d="M12 4v16m8-8H4" />
               </svg>
               <svg
                 x-show="selected === 2"
@@ -450,13 +404,11 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d="M20 12H4"
-                />
+                  d="M20 12H4" />
               </svg>
             </button>
             <div x-show="selected === 2" class="px-6 pb-4 text-gray-600">
@@ -468,27 +420,21 @@
           <!-- FAQ 3 -->
           <div
             class="border border-gray-200 rounded-lg"
-            @click="selected !== 3 ? selected = 3 : selected = null"
-          >
+            @click="selected !== 3 ? selected = 3 : selected = null">
             <button
-              class="w-full px-6 py-4 flex justify-between items-center text-left"
-            >
-              <span class="text-lg font-medium text-gray-800"
-                >Apakah saya bisa mendaftar lebih dari satu jalur?</span
-              >
+              class="w-full px-6 py-4 flex justify-between items-center text-left">
+              <span class="text-lg font-medium text-gray-800">Apakah saya bisa mendaftar lebih dari satu jalur?</span>
               <svg
                 x-show="selected !== 3"
                 class="w-6 h-6 text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d="M12 4v16m8-8H4"
-                />
+                  d="M12 4v16m8-8H4" />
               </svg>
               <svg
                 x-show="selected === 3"
@@ -496,13 +442,11 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d="M20 12H4"
-                />
+                  d="M20 12H4" />
               </svg>
             </button>
             <div x-show="selected === 3" class="px-6 pb-4 text-gray-600">
@@ -520,4 +464,5 @@
       </div>
     </footer>
   </body>
-</html>
+
+  </html>
