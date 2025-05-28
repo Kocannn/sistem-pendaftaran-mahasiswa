@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     echo "
                         <script>
                             alert('Pendaftaran Berhasil');
-                            window.location.href = '/mahasiswa/login';
+                            window.location.href = 'mahasiswa/login';
                         </script>
                     ";
                 } else {
