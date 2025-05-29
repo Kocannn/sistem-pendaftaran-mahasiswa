@@ -1,17 +1,21 @@
 <?php
-include_once __DIR__ . '/../../service/db.php';
-include_once __DIR__ . '/../../service/admin/logout.php';
-include_once __DIR__ . '/../../service/admin/filter_and_pagination.php';
-include_once __DIR__ . '/../../service/calculate.php';
-session_start();
+include_once __DIR__ . '/../service/db.php';
+include_once __DIR__ . '/../service/admin/logout.php';
+include_once __DIR__ . '/../service/admin/filter_and_pagination.php';
+include_once __DIR__ . '/../service/calculate.php';
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
 
 if (!isset($_SESSION["admin_id"])) {
-  header("Location: /admin/login");
+  header("Location: /sistem-informasi-pendaftaran/admin/login");
   exit();
 }
+
 if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
   handleLogout();
-  header("Location: /admin/");
+  header("Location: /sistem-informasi-pendaftaran/admin/login");
   exit();
 }
 // Handle admission calculation if requested
