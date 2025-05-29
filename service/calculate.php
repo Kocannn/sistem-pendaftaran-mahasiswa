@@ -16,7 +16,7 @@ function calculateAdmission($jalurPendaftaran, $skorUjian, $prodi1, $prodi2)
     'status' => '',
     'jalur_baru' => $jalurPendaftaran,
     'prodi_diterima' => $prodi1, // Default to prodi1
-    'status_kelulusan' => 'lulus', // Default to lulus
+    'status_kelulusan' => 'Tidak Lulus', // Default to lulus
     'prodi_1_kode' => $prodi1,
     'prodi_2_kode' => $prodi2,
     'message' => ''
@@ -26,9 +26,12 @@ function calculateAdmission($jalurPendaftaran, $skorUjian, $prodi1, $prodi2)
   if ($jalurPendaftaran === 'SNBP') {
     if ($skorUjian >= 85) {
       $result['status'] = 'Lolos Pilihan 1';
+      $result['status_kelulusan'] = 'Lulus Pilihan 1';
       $result['message'] = 'Selamat! Anda lolos seleksi pada program studi pilihan pertama.';
     } elseif ($skorUjian >= 75.1 && $skorUjian <= 84.9) {
       $result['status'] = 'Lolos Pilihan 2';
+            $result['status_kelulusan'] = 'Lulus Pilihan 2';
+
       $result['prodi_diterima'] = $prodi2;
       $result['message'] = 'Anda lolos seleksi pada program studi pilihan kedua.';
     } else {
@@ -41,10 +44,14 @@ function calculateAdmission($jalurPendaftaran, $skorUjian, $prodi1, $prodi2)
 
   // SNBT Path rules
   elseif ($jalurPendaftaran === 'SNBT') {
-    if ($skorUjian >= 65.1 && $skorUjian <= 74.9) {
+    if ($skorUjian >= 65.1) {
       $result['status'] = 'Lolos Pilihan 1';
+            $result['status_kelulusan'] = 'Lulus Pilihan 1';
+
       $result['message'] = 'Selamat! Anda lolos seleksi pada program studi pilihan pertama.';
     } elseif ($skorUjian >= 55.1 && $skorUjian <= 65.0) {
+      $result['status_kelulusan'] = 'Lulus Pilihan 2';
+
       $result['status'] = 'Lolos Pilihan 2';
       $result['prodi_diterima'] = $prodi2;
       $result['message'] = 'Anda lolos seleksi pada program studi pilihan kedua.';
@@ -58,10 +65,12 @@ function calculateAdmission($jalurPendaftaran, $skorUjian, $prodi1, $prodi2)
 
   // Mandiri Path rules
   elseif ($jalurPendaftaran === 'Mandiri') {
-    if ($skorUjian >= 50.0 && $skorUjian <= 55.0) {
+    if ($skorUjian >= 55.0) {
+      $result['status_kelulusan'] = 'Lulus Pilihan 1';    
       $result['status'] = 'Lolos Pilihan 1';
       $result['message'] = 'Selamat! Anda lolos seleksi pada program studi pilihan pertama.';
     } elseif ($skorUjian >= 45.0 && $skorUjian <= 49.9) {
+      $result['status_kelulusan'] = 'Lulus Pilihan 1';      
       $result['status'] = 'Lolos Pilihan 2';
       $result['prodi_diterima'] = $prodi2;
       $result['message'] = 'Anda lolos seleksi pada program studi pilihan kedua.';
