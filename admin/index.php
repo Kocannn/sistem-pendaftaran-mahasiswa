@@ -7,7 +7,6 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-
 if (!isset($_SESSION["admin_id"])) {
   header("Location: /sistem-informasi-pendaftaran/admin/login");
   exit();
@@ -18,15 +17,15 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
   header("Location: /sistem-informasi-pendaftaran/admin/login");
   exit();
 }
+
 // Handle admission calculation if requested
 if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 'true') {
-  // Get all students that need calculation
   $studentsQuery = $conn->query("
     SELECT 
       nisn, jalur_pendaftaran, skor_ujian, prodi_1_kode, prodi_2_kode 
     FROM 
       mahasiswa
-    LIMIT 50 -- Limiting to avoid too many calculations at once
+    LIMIT 50
   ");
 
   $processedCount = 0;
@@ -46,14 +45,10 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
     }
   }
 
-  // Store result message in session to display after redirect
   $_SESSION['calculation_message'] = "Perhitungan selesai: $successCount dari $processedCount mahasiswa berhasil diproses.";
-
-  // Redirect to avoid form resubmission
   header("Location: " . $_SERVER['PHP_SELF']);
   exit();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -62,74 +57,120 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Admin - Sistem Penerimaan Mahasiswa</title>
+  <title>Dashboard Admin - Portal Akademik</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            'inter': ['Inter', 'sans-serif'],
+          colors: {
+            admin: {
+              50: '#fdf2f8',
+              100: '#fce7f3',
+              200: '#fbcfe8',
+              300: '#f9a8d4',
+              400: '#f472b6',
+              500: '#ec4899',
+              600: '#db2777',
+              700: '#be185d',
+              800: '#9d174d',
+              900: '#831843',
+            },
+            dark: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-in': 'slideIn 0.3s ease-out',
+            'bounce-subtle': 'bounceSubtle 2s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideIn: {
+              '0%': { transform: 'translateX(-10px)', opacity: '0' },
+              '100%': { transform: 'translateX(0)', opacity: '1' },
+            },
+            bounceSubtle: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-5px)' },
+            }
           }
         }
       }
     }
   </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="bg-gray-50 font-inter">
+<body class="bg-gradient-to-br from-dark-50 via-admin-50 to-purple-100 font-inter min-h-screen">
   <div class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <div id="sidebar" class="hidden md:flex md:flex-shrink-0">
-      <div class="flex flex-col w-64">
-        <div class="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-white border-r border-gray-200">
-          <!-- Logo -->
-          <div class="flex items-center flex-shrink-0 px-4">
+    <!-- Enhanced Sidebar -->
+    <div id="sidebar" class="hidden md:flex md:flex-shrink-0 transition-all duration-300">
+      <div class="flex flex-col w-72">
+        <div class="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-white/95 backdrop-blur-sm border-r border-admin-200 shadow-xl">
+          <!-- Logo Section -->
+          <div class="flex items-center flex-shrink-0 px-6 mb-8">
             <div class="flex items-center">
-              <div class="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-lg">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
+              <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-admin-600 to-admin-700 rounded-xl shadow-lg">
+                <i class="fas fa-shield-alt text-white text-xl"></i>
               </div>
-              <h1 class="ml-3 text-xl font-bold text-gray-900">Admin Panel</h1>
+              <div class="ml-4">
+                <h1 class="text-xl font-bold text-dark-800">Admin Portal</h1>
+                <p class="text-sm text-dark-500">Sistem Akademik</p>
+              </div>
             </div>
           </div>
 
-          <!-- Navigation -->
-          <nav class="mt-8 flex-1 px-2 space-y-1">
-            <a href="#" class="bg-blue-50 border-r-4 border-blue-600 text-blue-700 group flex items-center px-2 py-2 text-sm font-medium rounded-l-md">
-              <svg class="text-blue-500 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
-              </svg>
-              Dashboard
-            </a>
+          <!-- Navigation Menu -->
+          <nav class="flex-1 px-4 space-y-2">
+            <div class="mb-6">
+              <p class="px-3 text-xs font-semibold text-dark-400 uppercase tracking-wider mb-3">Menu Utama</p>
+              
+              <a href="#" class="group flex items-center px-3 py-3 text-sm font-medium rounded-xl bg-gradient-to-r from-admin-500 to-admin-600 text-white shadow-lg transform transition-all duration-200 hover:scale-105">
+                <i class="fas fa-chart-pie mr-3 text-admin-100"></i>
+                <span>Dashboard</span>
+                <i class="fas fa-chevron-right ml-auto text-admin-200"></i>
+              </a>
+
+
+            </div>
+
           </nav>
 
-          <!-- User Profile with Logout -->
-          <div class="flex-shrink-0 border-t border-gray-200 p-4">
+          <!-- User Profile Section -->
+          <div class="flex-shrink-0 border-t border-admin-200 p-4 bg-gradient-to-r from-admin-50 to-purple-50">
             <div class="flex items-center justify-between">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
-                    <span class="text-sm font-medium text-white">A</span>
+                  <div class="h-10 w-10 rounded-xl bg-gradient-to-r from-admin-500 to-admin-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-user-tie text-white"></i>
                   </div>
                 </div>
                 <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-700">Admin User</p>
-                  <p class="text-xs text-gray-500">admin@university.ac.id</p>
+                  <p class="text-sm font-semibold text-dark-700">Administrator</p>
+                  <p class="text-xs text-dark-500">admin@university.ac.id</p>
                 </div>
               </div>
-              <!-- Logout Button -->
               <button
                 onclick="handleLogout()"
-                class="ml-2 p-1 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                class="ml-2 p-2 rounded-lg text-dark-400 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                 title="Logout">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
+                <i class="fas fa-sign-out-alt"></i>
               </button>
             </div>
           </div>
@@ -137,40 +178,52 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
       </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main Content Area -->
     <div class="flex flex-col w-0 flex-1 overflow-hidden">
-      <!-- Top Navigation -->
-      <div class="relative z-10 flex-shrink-0 flex h-16 bg-white shadow border-b border-gray-200">
+      <!-- Enhanced Top Navigation -->
+      <div class="relative z-10 flex-shrink-0 flex h-20 bg-white/95 backdrop-blur-sm shadow-lg border-b border-admin-200">
         <button
           onclick="toggleMobileMenu()"
-          class="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden">
-          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
-          </svg>
+          class="px-4 border-r border-admin-200 text-dark-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-admin-500 md:hidden hover:bg-admin-50 transition-colors">
+          <i class="fas fa-bars text-xl"></i>
         </button>
-        <div class="flex-1 px-4 flex justify-between items-center">
-          <div class="flex-1 flex">
-            <h1 class="text-2xl font-semibold text-gray-900">Dashboard Penerimaan Mahasiswa</h1>
+        
+        <div class="flex-1 px-6 flex justify-between items-center">
+          <div class="flex-1 flex items-center">
+            <div>
+              <h1 class="text-2xl font-bold text-dark-800">Dashboard Penerimaan</h1>
+              <p class="text-sm text-dark-500 mt-1">Sistem Informasi Pendaftaran Mahasiswa Baru</p>
+            </div>
           </div>
 
           <!-- Notification Area -->
           <?php if (isset($_SESSION['calculation_message'])): ?>
-            <div class="mr-4 px-4 py-2 bg-green-100 border border-green-200 text-green-700 rounded-md">
-              <?= $_SESSION['calculation_message'] ?>
-              <?php unset($_SESSION['calculation_message']); ?>
+            <div class="mr-4 px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-700 rounded-xl shadow-sm animate-slide-in">
+              <div class="flex items-center">
+                <i class="fas fa-check-circle mr-2 text-green-600"></i>
+                <span class="text-sm font-medium"><?= $_SESSION['calculation_message'] ?></span>
+              </div>
             </div>
+            <?php unset($_SESSION['calculation_message']); ?>
           <?php endif; ?>
 
-          <div class="ml-4 flex items-center md:ml-6 space-x-3">
+          <div class="ml-4 flex items-center space-x-4">
+            <!-- Quick Actions -->
+            <div class="hidden lg:flex items-center space-x-2">
+              <button class="p-2 rounded-lg text-dark-400 hover:text-admin-600 hover:bg-admin-50 transition-all duration-200" title="Notifikasi">
+                <i class="fas fa-bell"></i>
+              </button>
+              <button class="p-2 rounded-lg text-dark-400 hover:text-admin-600 hover:bg-admin-50 transition-all duration-200" title="Pesan">
+                <i class="fas fa-envelope"></i>
+              </button>
+            </div>
 
             <!-- Mobile Logout Button -->
             <button
               onclick="handleLogout()"
-              class="md:hidden bg-white p-1 rounded-full text-gray-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              class="md:hidden p-2 rounded-lg text-dark-400 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
               title="Logout">
-              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-              </svg>
+              <i class="fas fa-sign-out-alt"></i>
             </button>
           </div>
         </div>
@@ -178,25 +231,27 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
 
       <!-- Dashboard Content -->
       <main class="flex-1 relative overflow-y-auto focus:outline-none">
-        <div class="py-6">
+        <div class="py-8">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            
+            <!-- Enhanced Summary Cards -->
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
               <!-- Total Pendaftar -->
-              <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
+              <div class="bg-white/90 backdrop-blur-sm overflow-hidden shadow-xl rounded-2xl border border-white/20 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                <div class="p-6">
                   <div class="flex items-center">
                     <div class="flex-shrink-0">
-                      <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                        </svg>
+                      <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-users text-white text-xl"></i>
                       </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                       <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Total Pendaftar</dt>
-                        <dd class="text-lg font-medium text-gray-900"><?= $totalStudents ?></dd>
+                        <dt class="text-sm font-medium text-dark-500 truncate">Total Pendaftar</dt>
+                        <dd class="text-2xl font-bold text-dark-900"><?= $totalStudents ?></dd>
+                        <dd class="text-xs text-green-600 font-medium">
+                          <i class="fas fa-arrow-up mr-1"></i>Mahasiswa baru
+                        </dd>
                       </dl>
                     </div>
                   </div>
@@ -204,20 +259,21 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
               </div>
 
               <!-- Jalur SNBP -->
-              <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
+              <div class="bg-white/90 backdrop-blur-sm overflow-hidden shadow-xl rounded-2xl border border-white/20 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                <div class="p-6">
                   <div class="flex items-center">
                     <div class="flex-shrink-0">
-                      <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                      <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-medal text-white text-xl"></i>
                       </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                       <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Jalur SNBP</dt>
-                        <dd class="text-lg font-medium text-gray-900"><?= $snbpCount ?></dd>
+                        <dt class="text-sm font-medium text-dark-500 truncate">Jalur SNBP</dt>
+                        <dd class="text-2xl font-bold text-dark-900"><?= $snbpCount ?></dd>
+                        <dd class="text-xs text-green-600 font-medium">
+                          <i class="fas fa-check-circle mr-1"></i>Prestasi Akademik
+                        </dd>
                       </dl>
                     </div>
                   </div>
@@ -225,20 +281,21 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
               </div>
 
               <!-- Jalur SNBT -->
-              <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
+              <div class="bg-white/90 backdrop-blur-sm overflow-hidden shadow-xl rounded-2xl border border-white/20 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                <div class="p-6">
                   <div class="flex items-center">
                     <div class="flex-shrink-0">
-                      <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                        </svg>
+                      <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-clipboard-check text-white text-xl"></i>
                       </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                       <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Jalur SNBT</dt>
-                        <dd class="text-lg font-medium text-gray-900"><?= $snbtCount ?></dd>
+                        <dt class="text-sm font-medium text-dark-500 truncate">Jalur SNBT</dt>
+                        <dd class="text-2xl font-bold text-dark-900"><?= $snbtCount ?></dd>
+                        <dd class="text-xs text-blue-600 font-medium">
+                          <i class="fas fa-pencil-alt mr-1"></i>Tes Berbasis Komputer
+                        </dd>
                       </dl>
                     </div>
                   </div>
@@ -246,20 +303,21 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
               </div>
 
               <!-- Jalur Mandiri -->
-              <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
+              <div class="bg-white/90 backdrop-blur-sm overflow-hidden shadow-xl rounded-2xl border border-white/20 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                <div class="p-6">
                   <div class="flex items-center">
                     <div class="flex-shrink-0">
-                      <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
+                      <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-admin-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-university text-white text-xl"></i>
                       </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                       <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Jalur Mandiri</dt>
-                        <dd class="text-lg font-medium text-gray-900"><?= $mandiriCount ?></dd>
+                        <dt class="text-sm font-medium text-dark-500 truncate">Jalur Mandiri</dt>
+                        <dd class="text-2xl font-bold text-dark-900"><?= $mandiriCount ?></dd>
+                        <dd class="text-xs text-purple-600 font-medium">
+                          <i class="fas fa-star mr-1"></i>Seleksi Mandiri
+                        </dd>
                       </dl>
                     </div>
                   </div>
@@ -267,167 +325,201 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
               </div>
             </div>
 
-            <!-- Charts Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Enhanced Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
               <!-- Bar Chart -->
-              <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Peminat per Program Studi</h3>
-                <div style="height: 300px;">
+              <div class="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-white/20">
+                <div class="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 class="text-xl font-bold text-dark-900">Peminat per Program Studi</h3>
+                    <p class="text-sm text-dark-500 mt-1">Perbandingan jumlah pendaftar dan daya tampung program studi</p>
+                  </div>
+                  <div class="p-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
+                    <i class="fas fa-chart-bar text-blue-600"></i>
+                  </div>
+                </div>
+                <div style="height: 350px;">
                   <canvas id="barChart"></canvas>
                 </div>
               </div>
 
               <!-- Pie Chart -->
-              <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Status Kelulusan</h3>
-                <div style="height: 300px;">
+              <div class="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-white/20">
+                <div class="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 class="text-xl font-bold text-dark-900">Status Kelulusan</h3>
+                    <p class="text-sm text-dark-500 mt-1">Persentase status penerimaan mahasiswa</p>
+                  </div>
+                  <div class="p-2 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
+                    <i class="fas fa-chart-pie text-green-600"></i>
+                  </div>
+                </div>
+                <div style="height: 350px;">
                   <canvas id="pieChart"></canvas>
                 </div>
               </div>
             </div>
 
-            <!-- Filters and Table -->
-            <div class="bg-white shadow rounded-lg">
-              <div class="px-6 py-4 border-b border-gray-200">
+            <!-- Enhanced Data Table Section -->
+            <div class="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border border-white/20">
+              <!-- Table Header -->
+              <div class="px-8 py-6 border-b border-admin-200 bg-gradient-to-r from-admin-50 to-purple-50">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                  <h3 class="text-lg font-medium text-gray-900">Daftar Mahasiswa</h3>
-                  <div class="mt-3 sm:mt-0 sm:ml-4 flex space-x-3">
-                    <form method="GET" action="" class="flex space-x-3">
-                      <select name="jalur" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" onchange="this.form.submit()">
+                  <div>
+                    <h3 class="text-xl font-bold text-dark-900">Daftar Mahasiswa</h3>
+                    <p class="text-sm text-dark-500 mt-1">Kelola data pendaftar dan status penerimaan</p>
+                  </div>
+                  
+                  <div class="mt-4 sm:mt-0 sm:ml-4 flex flex-wrap gap-3">
+                    <!-- Filters -->
+                    <form method="GET" action="" class="flex flex-wrap gap-3">
+                      <select name="jalur" class="block w-full sm:w-auto pl-3 pr-10 py-2 text-base border-admin-300 focus:outline-none focus:ring-admin-500 focus:border-admin-500 sm:text-sm rounded-xl bg-white shadow-sm" onchange="this.form.submit()">
                         <option <?= !isset($_GET['jalur']) || $_GET['jalur'] === 'Semua Jalur' ? 'selected' : '' ?>>Semua Jalur</option>
                         <option <?= isset($_GET['jalur']) && $_GET['jalur'] === 'SNBP' ? 'selected' : '' ?>>SNBP</option>
                         <option <?= isset($_GET['jalur']) && $_GET['jalur'] === 'SNBT' ? 'selected' : '' ?>>SNBT</option>
                         <option <?= isset($_GET['jalur']) && $_GET['jalur'] === 'Mandiri' ? 'selected' : '' ?>>Mandiri</option>
                       </select>
-
-                      <!-- Filter Status -->
-                      <select name="status" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" onchange="this.form.submit()">
+                      <select name="status" class="block w-full sm:w-auto pl-3 pr-10 py-2 text-base border-admin-300 focus:outline-none focus:ring-admin-500 focus:border-admin-500 sm:text-sm rounded-xl bg-white shadow-sm" onchange="this.form.submit()">
                         <option <?= !isset($_GET['status']) || $_GET['status'] === 'Semua Status' ? 'selected' : '' ?>>Semua Status</option>
                         <option <?= isset($_GET['status']) && $_GET['status'] === 'Lolos P1' ? 'selected' : '' ?>>Lolos P1</option>
                         <option <?= isset($_GET['status']) && $_GET['status'] === 'Lolos P2' ? 'selected' : '' ?>>Lolos P2</option>
                         <option <?= isset($_GET['status']) && $_GET['status'] === 'Dialihkan' ? 'selected' : '' ?>>Dialihkan</option>
                         <option <?= isset($_GET['status']) && $_GET['status'] === 'Tidak Lulus' ? 'selected' : '' ?>>Tidak Lulus</option>
                       </select>
-
                     </form>
 
-                    <!-- Calculate Admissions -->
-                    <form method="POST" action="" class="flex">
-                      <button type="submit" name="calculate_admission" value="true" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                        </svg>
-                        Hitung Kelulusan
-                      </button>
-                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Enhanced Table -->
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-admin-200">
+                  <thead class="bg-gradient-to-r from-dark-50 to-admin-50">
+                    <tr>
+                      <th class="px-6 py-4 text-left text-xs font-semibold text-dark-600 uppercase tracking-wider">
+                        <i class="fas fa-id-card mr-2"></i>No. Pendaftaran
+                      </th>
+                      <th class="px-6 py-4 text-left text-xs font-semibold text-dark-600 uppercase tracking-wider">
+                        <i class="fas fa-user mr-2"></i>Nama
+                      </th>
+                      <th class="px-6 py-4 text-left text-xs font-semibold text-dark-600 uppercase tracking-wider">
+                        <i class="fas fa-graduation-cap mr-2"></i>Program Studi
+                      </th>
+                      <th class="px-6 py-4 text-left text-xs font-semibold text-dark-600 uppercase tracking-wider">
+                        <i class="fas fa-route mr-2"></i>Jalur
+                      </th>
+                      <th class="px-6 py-4 text-left text-xs font-semibold text-dark-600 uppercase tracking-wider">
+                        <i class="fas fa-check-circle mr-2"></i>Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-admin-100">
+                    <?php while ($student = $students->fetch_assoc()): ?>
+                      <tr class="hover:bg-admin-50 transition-colors duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-900">
+                          <div class="flex items-center">
+                            <div class="w-2 h-2 bg-admin-500 rounded-full mr-3"></div>
+                            <?= htmlspecialchars($student['nisn']) ?>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-dark-900 font-medium">
+                          <?= htmlspecialchars($student['nama']) ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-dark-700">
+                          <?= htmlspecialchars($student['prodi_nama']) ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full shadow-sm
+                            <?= $student['jalur_pendaftaran'] === 'SNBP' ? 'bg-green-100 text-green-800 border border-green-200' : 
+                                ($student['jalur_pendaftaran'] === 'SNBT' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                                'bg-purple-100 text-purple-800 border border-purple-200') ?>">
+                            <i class="fas fa-<?= $student['jalur_pendaftaran'] === 'SNBP' ? 'medal' : ($student['jalur_pendaftaran'] === 'SNBT' ? 'clipboard-check' : 'university') ?> mr-1"></i>
+                            <?= htmlspecialchars($student['jalur_pendaftaran']) ?>
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full shadow-sm
+                            <?= $student['status_kelulusan'] === 'Lulus Pilihan 1' ? 'bg-green-100 text-green-800 border border-green-200' : 
+                                ($student['status_kelulusan'] === 'Lulus Pilihan 2' ? 'bg-blue-100 text-blue-800 border border-blue-200' : 
+                                'bg-red-100 text-red-800 border border-red-200') ?>">
+                            <i class="fas fa-<?= $student['status_kelulusan'] === 'Lulus Pilihan 1' || $student['status_kelulusan'] === 'Lulus Pilihan 2' ? 'check-circle' : 'times-circle' ?> mr-1"></i>
+                            <?= htmlspecialchars($student['status_kelulusan']) ?>
+                          </span>
+                        </td>
+                      </tr>
+                    <?php endwhile; ?>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Enhanced Pagination -->
+              <div class="bg-gradient-to-r from-dark-50 to-admin-50 px-6 py-4 flex items-center justify-between border-t border-admin-200">
+                <div class="flex-1 flex justify-between sm:hidden">
+                  <a href="?page=<?= max(1, $page - 1) ?><?= isset($_GET['jalur']) ? '&jalur=' . $_GET['jalur'] : '' ?><?= isset($_GET['status']) ? '&status=' . $_GET['status'] : '' ?>" 
+                     class="relative inline-flex items-center px-4 py-2 border border-admin-300 text-sm font-medium rounded-lg text-dark-700 bg-white hover:bg-admin-50 transition-colors">
+                    <i class="fas fa-chevron-left mr-2"></i>Previous
+                  </a>
+                  <a href="?page=<?= min($totalPages, $page + 1) ?><?= isset($_GET['jalur']) ? '&jalur=' . $_GET['jalur'] : '' ?><?= isset($_GET['status']) ? '&status=' . $_GET['status'] : '' ?>" 
+                     class="ml-3 relative inline-flex items-center px-4 py-2 border border-admin-300 text-sm font-medium rounded-lg text-dark-700 bg-white hover:bg-admin-50 transition-colors">
+                    Next<i class="fas fa-chevron-right ml-2"></i>
+                  </a>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p class="text-sm text-dark-700">
+                      Menampilkan <span class="font-semibold"><?= $offset + 1 ?></span> sampai <span class="font-semibold"><?= min($offset + $limit, $totalRecords) ?></span> dari <span class="font-semibold"><?= $totalRecords ?></span> hasil
+                    </p>
+                  </div>
+                  <div>
+                    <nav class="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px">
+                      <a href="?page=<?= max(1, $page - 1) ?><?= isset($_GET['jalur']) ? '&jalur=' . $_GET['jalur'] : '' ?><?= isset($_GET['status']) ? '&status=' . $_GET['status'] : '' ?>"
+                         class="relative inline-flex items-center px-3 py-2 rounded-l-xl border border-admin-300 bg-white text-sm font-medium text-dark-500 hover:bg-admin-50 transition-colors">
+                        <i class="fas fa-chevron-left"></i>
+                      </a>
+                      
+                      <span class="relative inline-flex items-center px-4 py-2 border border-admin-300 bg-admin-50 text-sm font-medium text-admin-700">
+                        <?= $page ?>
+                      </span>
+                      
+                      <a href="?page=<?= min($totalPages, $page + 1) ?><?= isset($_GET['jalur']) ? '&jalur=' . $_GET['jalur'] : '' ?><?= isset($_GET['status']) ? '&status=' . $_GET['status'] : '' ?>"
+                         class="relative inline-flex items-center px-3 py-2 rounded-r-xl border border-admin-300 bg-white text-sm font-medium text-dark-500 hover:bg-admin-50 transition-colors">
+                        <i class="fas fa-chevron-right"></i>
+                      </a>
+                    </nav>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- Table -->
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pendaftaran</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program Studi</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <?php while ($student = $students->fetch_assoc()): ?>
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= htmlspecialchars($student['nisn']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= htmlspecialchars($student['nama']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= htmlspecialchars($student['prodi_nama']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                        <?= $student['jalur_pendaftaran'] === 'SNBP' ? 'bg-green-100 text-green-800' : ($student['jalur_pendaftaran'] === 'SNBT' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-purple-100 text-purple-800') ?>">
-                        <?= htmlspecialchars($student['jalur_pendaftaran']) ?>
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                        <?= $student['status'] === 'Lolos P1' ? 'bg-green-100 text-green-800' : ($student['status'] === 'Lolos P2' ? 'bg-blue-100 text-blue-800' : ($student['status'] === 'Dialihkan' ? 'bg-orange-100 text-orange-800' :
-                          'bg-red-100 text-red-800')) ?>">
-                        <?= htmlspecialchars($student['status']) ?>
-                      </span>
-                  </tr>
-                <?php endwhile; ?>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination -->
-          <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            <div class="flex-1 flex justify-between sm:hidden">
-              <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Previous</a>
-              <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</a>
-            </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm text-gray-700">
-                  Menampilkan <span class="font-medium"><?= $offset + 1 ?></span> sampai <span class="font-medium"><?= min($offset + $limit, $totalRecords) ?></span> dari <span class="font-medium"><?= $totalRecords ?></span> hasil
-                </p>
-              </div>
-              <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <a href="?page=<?= max(1, $page - 1) ?><?= isset($_GET['jalur']) ? '&jalur=' . $_GET['jalur'] : '' ?><?= isset($_GET['status']) ? '&status=' . $_GET['status'] : '' ?>"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    <span class="sr-only">Previous</span>
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                  </a>
-
-
-                  <a href="?page=<?= min($totalPages, $page + 1) ?><?= isset($_GET['jalur']) ? '&jalur=' . $_GET['jalur'] : '' ?><?= isset($_GET['status']) ? '&status=' . $_GET['status'] : '' ?>"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    <span class="sr-only">Next</span>
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                    </svg>
-                  </a>
-                </nav>
-              </div>
-            </div>
-          </div>
         </div>
+      </main>
     </div>
-    </main>
-  </div>
   </div>
 
-  <!-- Logout Confirmation Modal -->
-  <div id="logoutModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+  <!-- Enhanced Logout Modal -->
+  <div id="logoutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 transition-opacity">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-2xl rounded-2xl bg-white">
       <div class="mt-3 text-center">
-        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-          <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-          </svg>
+        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-r from-red-100 to-red-200">
+          <i class="fas fa-sign-out-alt text-red-600 text-2xl"></i>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mt-4">Konfirmasi Logout</h3>
-        <div class="mt-2 px-7 py-3">
-          <p class="text-sm text-gray-500">
-            Apakah Anda yakin ingin keluar dari sistem? Anda akan diarahkan ke halaman login.
+        <h3 class="text-xl font-bold text-dark-900 mt-4">Konfirmasi Logout</h3>
+        <div class="mt-3 px-7 py-3">
+          <p class="text-sm text-dark-600">
+            Apakah Anda yakin ingin keluar dari sistem admin? Sesi Anda akan berakhir dan Anda akan diarahkan ke halaman login.
           </p>
         </div>
-        <div class="flex justify-center space-x-3 mt-4">
+        <div class="flex justify-center space-x-4 mt-6">
           <button
             onclick="cancelLogout()"
-            class="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
-            Batal
+            class="px-6 py-2 bg-dark-200 text-dark-800 text-sm font-medium rounded-xl shadow-sm hover:bg-dark-300 focus:outline-none focus:ring-2 focus:ring-dark-300 transition-all duration-200">
+            <i class="fas fa-times mr-2"></i>Batal
           </button>
           <button
             onclick="confirmLogout()"
-            class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
-            Ya, Logout
+            class="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-medium rounded-xl shadow-sm hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
+            <i class="fas fa-check mr-2"></i>Ya, Logout
           </button>
         </div>
       </div>
@@ -435,45 +527,114 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
   </div>
 
   <script>
+    // Enhanced Chart Configuration
+    Chart.defaults.font.family = 'Inter';
+    Chart.defaults.color = '#64748b';
+
     // Bar Chart - Peminat per Program Studi
     const barCtx = document.getElementById('barChart').getContext('2d');
     const barChart = new Chart(barCtx, {
       type: 'bar',
       data: {
         labels: <?= json_encode($prodiLabels) ?>,
-        datasets: [{
-          label: 'Jumlah Peminat',
-          data: <?= json_encode($prodiData) ?>,
-          backgroundColor: [
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(245, 158, 11, 0.8)',
-            'rgba(139, 92, 246, 0.8)',
-            'rgba(239, 68, 68, 0.8)',
-            'rgba(6, 182, 212, 0.8)'
-          ],
-          borderColor: [
-            'rgba(59, 130, 246, 1)',
-            'rgba(16, 185, 129, 1)',
-            'rgba(245, 158, 11, 1)',
-            'rgba(139, 92, 246, 1)',
-            'rgba(239, 68, 68, 1)',
-            'rgba(6, 182, 212, 1)'
-          ],
-          borderWidth: 1
-        }]
+        datasets: [
+          {
+            label: 'Pilihan Pertama',
+            data: <?= json_encode($prodiPilihan1) ?>,
+            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1,
+            borderRadius: 6,
+            borderSkipped: false,
+            stack: 'Stack 0'
+          },
+          {
+            label: 'Pilihan Kedua',
+            data: <?= json_encode($prodiPilihan2) ?>,
+            backgroundColor: 'rgba(147, 197, 253, 0.8)',
+            borderColor: 'rgba(147, 197, 253, 1)',
+            borderWidth: 1,
+            borderRadius: 6,
+            borderSkipped: false,
+            stack: 'Stack 0'
+          },
+          {
+            label: 'Daya Tampung',
+            data: <?= json_encode($prodiDayaTampung) ?>,
+            type: 'line',
+            backgroundColor: 'rgba(236, 72, 153, 0.2)',
+            borderColor: 'rgba(236, 72, 153, 1)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(236, 72, 153, 1)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 1,
+            pointRadius: 4,
+            fill: false,
+            tension: 0.1
+          }
+        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        },
+        indexAxis: 'y',  // Horizontal bar chart
         plugins: {
           legend: {
-            display: false
+            display: true,
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              font: {
+                size: 11,
+                weight: 'bold'
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: '#ec4899',
+            borderWidth: 1,
+            cornerRadius: 8,
+            callbacks: {
+              afterTitle: function(context) {
+                return 'Kode Prodi: ' + context[0].label.split(' - ')[0];
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: '#64748b',
+              font: {
+                size: 11
+              }
+            }
+          },
+          x: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: '#64748b',
+              font: {
+                size: 10
+              }
+            },
+            title: {
+              display: true,
+              text: 'Jumlah Pendaftar',
+              font: {
+                size: 12,
+                weight: 'bold'
+              }
+            }
           }
         }
       }
@@ -482,7 +643,7 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
     // Pie Chart - Status Kelulusan
     const pieCtx = document.getElementById('pieChart').getContext('2d');
     const pieChart = new Chart(pieCtx, {
-      type: 'pie',
+      type: 'doughnut',
       data: {
         labels: <?= json_encode($statusLabels) ?>,
         datasets: [{
@@ -499,19 +660,33 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
             'rgba(245, 158, 11, 1)',
             'rgba(239, 68, 68, 1)'
           ],
-          borderWidth: 2
+          borderWidth: 3,
+          hoverOffset: 10
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        cutout: '60%',
         plugins: {
           legend: {
             position: 'bottom',
             labels: {
               padding: 20,
-              usePointStyle: true
+              usePointStyle: true,
+              font: {
+                size: 12,
+                weight: '500'
+              }
             }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: '#ec4899',
+            borderWidth: 1,
+            cornerRadius: 8,
           }
         }
       }
@@ -521,36 +696,36 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
     function toggleMobileMenu() {
       const sidebar = document.getElementById('sidebar');
       sidebar.classList.toggle('hidden');
+      sidebar.classList.toggle('fixed');
+      sidebar.classList.toggle('inset-0');
+      sidebar.classList.toggle('z-50');
     }
 
-    // Logout functionality
+    // Enhanced Logout functionality
     function handleLogout() {
       document.getElementById('logoutModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
     }
 
     function cancelLogout() {
       document.getElementById('logoutModal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
     }
 
     function confirmLogout() {
-      // Show loading state
       const modal = document.getElementById('logoutModal');
       modal.innerHTML = `
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-2xl rounded-2xl bg-white">
           <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-              <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-r from-admin-100 to-admin-200">
+              <i class="fas fa-spinner fa-spin text-admin-600 text-2xl"></i>
             </div>
-            <h3 class="text-lg font-medium text-gray-900 mt-4">Sedang Logout...</h3>
-            <p class="text-sm text-gray-500 mt-2">Mohon tunggu sebentar</p>
+            <h3 class="text-xl font-bold text-dark-900 mt-4">Sedang Logout...</h3>
+            <p class="text-sm text-dark-600 mt-2">Mohon tunggu sebentar</p>
           </div>
         </div>
       `;
 
-      // Create and submit a form to the same page with logout parameter
       const form = document.createElement('form');
       form.method = 'post';
       form.action = window.location.href;
@@ -563,34 +738,10 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
       form.appendChild(input);
       document.body.appendChild(form);
 
-      // Small delay to show the loading state
       setTimeout(() => {
         form.submit();
-      }, 800);
+      }, 1000);
     }
-
-    // Filter functionality
-    document.querySelectorAll('select').forEach(select => {
-      select.addEventListener('change', function() {
-        console.log('Filter changed:', this.value);
-        // Implement filter logic here
-      });
-    });
-
-    // Edit and Delete functionality
-    document.querySelectorAll('button').forEach(button => {
-      if (button.textContent.includes('Edit')) {
-        button.addEventListener('click', function() {
-          alert('Edit functionality - akan membuka modal edit');
-        });
-      } else if (button.textContent.includes('Hapus')) {
-        button.addEventListener('click', function() {
-          if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-            alert('Data berhasil dihapus');
-          }
-        });
-      }
-    });
 
     // Close modal when clicking outside
     document.getElementById('logoutModal').addEventListener('click', function(e) {
@@ -601,16 +752,41 @@ if (isset($_POST['calculate_admission']) && $_POST['calculate_admission'] === 't
 
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
-      // ESC to close modal
       if (e.key === 'Escape') {
         cancelLogout();
       }
-
-      // Ctrl+L for logout
       if (e.ctrlKey && e.key === 'l') {
         e.preventDefault();
         handleLogout();
       }
+    });
+
+    // Add loading states to buttons
+    document.querySelectorAll('button[type="submit"]').forEach(button => {
+      button.addEventListener('click', function() {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+        this.disabled = true;
+        
+        setTimeout(() => {
+          this.innerHTML = originalText;
+          this.disabled = false;
+        }, 3000);
+      });
+    });
+
+    // Smooth animations on load
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.grid > div');
+      cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+          card.style.transition = 'all 0.5s ease-out';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, index * 100);
+      });
     });
   </script>
 </body>

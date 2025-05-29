@@ -6,35 +6,48 @@ $snbpCount = $conn->query("SELECT COUNT(*) as count FROM mahasiswa WHERE jalur_p
 $snbtCount = $conn->query("SELECT COUNT(*) as count FROM mahasiswa WHERE jalur_pendaftaran = 'SNBT'")->fetch_assoc()['count'];
 $mandiriCount = $conn->query("SELECT COUNT(*) as count FROM mahasiswa WHERE jalur_pendaftaran = 'Mandiri'")->fetch_assoc()['count'];
 
-// Fetch program study data for chart
+// Fetch program study data for chart - IMPROVED VERSION
 $prodiQuery = $conn->query("
-    SELECT ps.nama, COUNT(m.nisn) as jumlah
-    FROM program_studi ps
-    LEFT JOIN mahasiswa m ON ps.kode = m.prodi_1_kode OR ps.kode = m.prodi_2_kode
-    GROUP BY ps.kode
-    ORDER BY jumlah DESC
-    LIMIT 6
+    SELECT 
+        ps.kode,
+        ps.nama,
+        ps.jenjang,
+        COUNT(DISTINCT CASE WHEN m.prodi_1_kode = ps.kode THEN m.nisn END) AS pilihan_1_count,
+        COUNT(DISTINCT CASE WHEN m.prodi_2_kode = ps.kode THEN m.nisn END) AS pilihan_2_count,
+        ps.daya_tampung
+    FROM 
+        program_studi ps
+    LEFT JOIN 
+        mahasiswa m ON ps.kode = m.prodi_1_kode OR ps.kode = m.prodi_2_kode
+    GROUP BY 
+        ps.kode
+    ORDER BY 
+        (COUNT(DISTINCT CASE WHEN m.prodi_1_kode = ps.kode THEN m.nisn END) + 
+         COUNT(DISTINCT CASE WHEN m.prodi_2_kode = ps.kode THEN m.nisn END)) DESC
+    LIMIT 10
 ");
 
 $prodiLabels = [];
-$prodiData = [];
+$prodiPilihan1 = [];
+$prodiPilihan2 = [];
+$prodiTotalPeminat = [];
+$prodiDayaTampung = [];
+
 while ($row = $prodiQuery->fetch_assoc()) {
-  $prodiLabels[] = $row['nama'];
-  $prodiData[] = $row['jumlah'];
+  $prodiLabels[] = $row['jenjang'] . ' - ' . $row['nama'];
+  $prodiPilihan1[] = (int)$row['pilihan_1_count'];
+  $prodiPilihan2[] = (int)$row['pilihan_2_count'];
+  $prodiTotalPeminat[] = (int)$row['pilihan_1_count'] + (int)$row['pilihan_2_count'];
+  $prodiDayaTampung[] = (int)$row['daya_tampung'];
 }
 
-// Fetch status data for pie chart
+// Fetch status data for pie chart - UPDATED FOR NEW ENUM VALUES
 $statusQuery = $conn->query("
     SELECT 
-        CASE
-            WHEN prodi_1_kode = prodi_2_kode THEN 'Lolos P1'
-            WHEN status_kelulusan = 'lulus' THEN 'Lolos P2'
-            WHEN status_kelulusan = 'tidak lulus' THEN 'Tidak Lulus'
-            ELSE 'Dialihkan'
-        END as status,
+        status_kelulusan as status,
         COUNT(*) as jumlah
     FROM mahasiswa
-    GROUP BY status
+    GROUP BY status_kelulusan
 ");
 
 $statusLabels = [];
@@ -93,16 +106,12 @@ $query = "
     SELECT 
         m.nisn, 
         m.nama, 
-        ps.nama as prodi_nama, 
+        ps.nama as prodi_nama,
         m.jalur_pendaftaran,
-        CASE
-            WHEN m.prodi_1_kode = m.prodi_2_kode THEN 'Lolos P1'
-            WHEN m.status_kelulusan = 'lulus' THEN 'Lolos P2'
-            WHEN m.status_kelulusan = 'tidak lulus' THEN 'Tidak Lulus'
-            ELSE 'Dialihkan'
-        END as status
-    FROM mahasiswa m
-    JOIN program_studi ps ON m.prodi_1_kode = ps.kode
+        m.status_kelulusan
+    FROM 
+        mahasiswa m
+    LEFT JOIN program_studi ps ON m.prodi_1_kode = ps.kode
     $where
     ORDER BY m.nisn DESC
     LIMIT ? OFFSET ?
@@ -119,3 +128,4 @@ if (!empty($params)) {
 }
 $stmt->execute();
 $students = $stmt->get_result();
+?>
